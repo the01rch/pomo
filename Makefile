@@ -3,8 +3,8 @@ BIN =	pomo
 SRC =	src/main.go
 
 all:
-	go build -o $(BIN) $(SRC)
-	mv $(BIN) bin
+	@go build -o $(BIN) $(SRC)
+	@mv $(BIN) bin
 
 run:
 	@bin/./pomo $(filter-out $@,$(MAKECMDGOALS))
