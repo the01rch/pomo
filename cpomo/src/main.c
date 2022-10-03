@@ -31,6 +31,9 @@ void get_pid(int sig, siginfo_t *info, void *context) {
 void start_flag(void) {
     int min = 24;
     int sec = 59;
+    int total = 0;
+    int a[10] = {0};
+    int i = 0;
     struct sigaction act;
 
 	act.sa_flags = SA_SIGINFO|SA_RESTART;
@@ -44,19 +47,23 @@ void start_flag(void) {
     printf("pid: %d\n", getpid());
     while (1) {
         if (us1 > 0) {
-            for (int i = 0; i < min; i++) {
-                kill(psender, 10);
-            }
-            sleep(1);
-            kill(psender, 12);
-            sleep(1);
-            for (int i = 0; i < sec; i++) {
-                kill(psender, 10);
-            }
-            sleep(1);
-            kill(psender, 12);
-            sleep(1);
-            us1 = 0;
+           total = min * 60;
+           total += sec;
+           for (i = 0; total > 0; i++) {
+                a[i] = total%2;
+                total = total/2;
+           }
+           for (int y = 10;y > 0; y--) {
+               printf("a[%d] = %d\n", y, a[y]);
+               if (a[y] == 0) {
+                   if (kill(psender, 10) == -1)
+                       write(1, "nannn !\n", 8);
+               } else if (a[y] == 1) {
+                   if (kill(psender, 12) == -1)
+                       write(1, "nannn !\n", 8);
+               }
+           }
+           us1 = 0;
         }
         if (min == 0 && sec == 0)
             break;
@@ -87,7 +94,9 @@ bool clock_flag(int pid) {
     //int min = 0;
     //int sec = 0;
     //int check = 0;
-
+    int i = 0;
+    int a[10] = {0};
+    
     struct sigaction act;
 
 	act.sa_flags = SA_SIGINFO|SA_RESTART;
@@ -100,27 +109,20 @@ bool clock_flag(int pid) {
     }
     if (kill(pid, 10) == -1)
         return false;
-    while (1) {
-        sleep(1);
-        if (us2 == 1) {
-            printf("us1 = %d\n", us1);
-            us1 = 0;
+    while (i < 10) {
+        if (us1 > 0) {
+            a[i] = 0;
+            i++;
+            us1 = 0;    
         }
-        if (us2 == 2) {
-            printf("us1 = %d\n", us1);
-            printf("bye !\n");
-            break;
+        if (us2 > 0) {
+            a[i] = 1;
+            i++;
+            us2 = 0;
         }
-        //if (us2 == 1 && check == 0) {
-        //    min = us1;
-        //    us1 = 0;
-        //    check = 1;
-        //}
-        //if (us2 >= 2) {
-        //    sec = us1;
-        //    printf("%d:%d\n", min, sec);
-        //    break;
-        //}
+    }
+    for ( ; i > 0; i--) {
+        printf("total = %d\n", a[i]);
     }
     return true;
 }
