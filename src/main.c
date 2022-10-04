@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <math.h>
 #include <stdlib.h>
 
 int us1 = 0;
@@ -47,23 +48,22 @@ void start_flag(void) {
     printf("pid: %d\n", getpid());
     while (1) {
         if (us1 > 0) {
-           total = min * 60;
-           total += sec;
-           for (i = 0; total > 0; i++) {
+            printf("signal recu de clock\n");
+            total = min * 60;
+            total += sec;
+            for (i = 0; total > 0; i++) {
                 a[i] = total%2;
                 total = total/2;
-           }
-           for (int y = 10;y > 0; y--) {
-               printf("a[%d] = %d\n", y, a[y]);
-               if (a[y] == 0) {
-                   if (kill(psender, 10) == -1)
-                       write(1, "nannn !\n", 8);
-               } else if (a[y] == 1) {
-                   if (kill(psender, 12) == -1)
-                       write(1, "nannn !\n", 8);
-               }
-           }
-           us1 = 0;
+            }
+            for (int y = 10;y > 0; y--) {
+                if (a[y] == 0) 
+                    kill(psender, 10);
+                else if (a[y] == 1) 
+                    kill(psender, 12);
+                usleep(800);
+            }
+            printf("reponse envoyer pour clock\n");
+            us1 = 0;
         }
         if (min == 0 && sec == 0)
             break;
@@ -93,10 +93,12 @@ bool send_signal(char *flag, int pid) {
 bool clock_flag(int pid) {
     //int min = 0;
     //int sec = 0;
-    //int check = 0;
-    int i = 0;
+    int check = 0;
     int a[10] = {0};
-    
+    int i = 0;
+    char test[11] = {0};
+    int bin = 0;
+
     struct sigaction act;
 
 	act.sa_flags = SA_SIGINFO|SA_RESTART;
@@ -107,23 +109,37 @@ bool clock_flag(int pid) {
     if (sigaction(SIGUSR2, &act, NULL) == -1) {
         exit(1);
     }
-    if (kill(pid, 10) == -1)
-        return false;
-    while (i < 10) {
+    while (1) {
+        if (check == 0) {
+            kill(pid, 10);
+            check = 1;
+        }
         if (us1 > 0) {
-            a[i] = 0;
-            i++;
+            a[i++] = 0;
             us1 = 0;    
         }
         if (us2 > 0) {
-            a[i] = 1;
-            i++;
+            a[i++] = 1;
             us2 = 0;
         }
+        if (i == 10)
+            break;
     }
-    for ( ; i > 0; i--) {
-        printf("total = %d\n", a[i]);
+    for (int x = 0; x < 10; x++) {
+        test[x] = a[x] + '0';
     }
+    bin = atoi(test);
+    int rem, base = 1, dec = 0;
+    while (bin > 0) {
+        rem = bin % 10; 
+        dec = dec + rem * base;
+        bin = bin / 10;
+        base = base * 2;
+    }
+    printf("dec = %d\n", dec);
+    int min = dec/60;
+    int sec = dec%60; 
+    printf("%d:%d\n", min, sec);
     return true;
 }
 

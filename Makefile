@@ -1,18 +1,17 @@
-BIN =	pomo
+include config.mk
 
-SRC =	src/main.go
+all:	$(BIN)
 
-all:
-	@go build -o $(BIN) $(SRC)
-	@mv $(BIN) bin
+$(BIN):	$(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(BIN)
 
-run:
-	@bin/./pomo $(filter-out $@,$(MAKECMDGOALS))
-%:
-	@true
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@go clean
-	@rm bin/$(BIN)
+	rm $(OBJ)
 
-re: clean all
+fclean: clean
+	rm $(BIN)
+
+re: fclean all
