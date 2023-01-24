@@ -1,8 +1,4 @@
-#include <stdbool.h>
-#include <string.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "pomo.h"
 
 bool my_strcmp(char *s1, char *s2) {
     for (int i = 0; s1[i] != '\0'; i++) {
@@ -21,7 +17,7 @@ void my_swap(char *c1, char *c2) {
     *c2 = tmp;
 }
 
-void strrev(char *str) {
+void my_strrev(char *str) {
     int size = strlen(str);
     int half = size / 2;
     int y = size - 1;
@@ -32,7 +28,7 @@ void strrev(char *str) {
     }
 }
 
-int itoa(int n, char *str, int base) {
+int my_itoa(int n, char *str, int base) {
     int rem = 0;
     int i = 0;
     bool neg = false;
@@ -47,12 +43,25 @@ int itoa(int n, char *str, int base) {
     }
     while (n != 0) { 
         rem = n % base;
-        //str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
         str[i++] = rem + '0';
         n = n / base;
     }
     if (neg == true)
        str[i] = '-'; 
-    strrev(str);
+    my_strrev(str);
     return 0; 
+}
+
+char *my_strconc(char *s1, char *s2) {
+    int size[2] = {strlen(s1), strlen(s2)};
+    char *str = malloc(sizeof(char) * size[0]+size[1]);
+    int w = 0;
+
+    for (int i = 0; i < size[0]+size[1]; i++) {
+        if (i < size[0])
+            str[i] = s1[i];
+        else
+            str[i] = s2[w++];
+    }
+    return str;
 }

@@ -1,8 +1,4 @@
-#include <signal.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#define SIZE 100
+#include "pomo.h"
 
 int seq[8] = {0};
 int check = 0;
@@ -27,6 +23,18 @@ void get_pid(int sig, siginfo_t *info, void *context)
         check = 1;
 }
 
+char *convert_time_to_arr(int min, int sec) {
+    char *str = NULL;
+    char smin[2];
+    char ssec[2];
+
+    my_itoa(min, smin, 10);
+    my_itoa(sec, ssec, 10);
+    str = my_strconc(smin, ssec);
+    //str = my_strconc(str, ssec);
+    return str;    
+}
+
 void act_start(void) {
     struct sigaction act;
     int min = 24;
@@ -45,7 +53,8 @@ void act_start(void) {
         usleep(1000000);
         sec--;
         if (check > 0) {
-            printf("%d:%d\n", min, sec);
+            //printf("%d:%d\n", min, sec);
+            printf("%s\n", convert_time_to_arr(min, sec) );
             kill(pclient, 10);
             check = 0;
         }
