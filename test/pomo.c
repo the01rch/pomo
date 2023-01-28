@@ -23,16 +23,31 @@ void get_pid(int sig, siginfo_t *info, void *context)
         check = 1;
 }
 
-char *convert_time_to_arr(int min, int sec) {
+char *time2str(int min, int sec) {
     char *str = NULL;
     char smin[2];
     char ssec[2];
 
     my_itoa(min, smin, 10);
+    str = my_strconc(smin, ":");
     my_itoa(sec, ssec, 10);
-    str = my_strconc(smin, ssec);
-    //str = my_strconc(str, ssec);
+    str = my_strconc(str, ssec);
     return str;    
+}
+
+void char2bin(char c) {
+    for (int i = 7; i >= 0; --i)
+        putchar( (c & (1 << i)) ? '1' : '0' );
+    putchar('\n');
+}
+
+void str2bin(char *str) {
+    putchar('\n');
+    while (*str) {
+        char2bin(*str); 
+        str++; 
+    }
+    putchar('\n');
 }
 
 void act_start(void) {
@@ -40,7 +55,7 @@ void act_start(void) {
     int min = 24;
     int sec = 59;
 
-    act.sa_flags = SA_SIGINFO;
+    act.sa_flags = SA_SIGINFO|SA_RESTART;
     act.sa_sigaction = get_pid;
     sigaction(SIGUSR1, &act, NULL);
     while (1) {
@@ -53,8 +68,7 @@ void act_start(void) {
         usleep(1000000);
         sec--;
         if (check > 0) {
-            //printf("%d:%d\n", min, sec);
-            printf("%s\n", convert_time_to_arr(min, sec) );
+            str2bin(time2str(min, sec));
             kill(pclient, 10);
             check = 0;
         }

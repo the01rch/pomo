@@ -53,15 +53,19 @@ int my_itoa(int n, char *str, int base) {
 }
 
 char *my_strconc(char *s1, char *s2) {
-    int size[2] = {strlen(s1), strlen(s2)};
-    char *str = malloc(sizeof(char) * size[0]+size[1]);
+    int tsize = strlen(s1) + strlen(s2);
+    char *str = malloc(sizeof(char) * tsize + 1);
     int w = 0;
+    int i = 0;
 
-    for (int i = 0; i < size[0]+size[1]; i++) {
-        if (i < size[0])
+    for ( ; i < tsize; i++) {
+        if (i < strlen(s1))
             str[i] = s1[i];
-        else
-            str[i] = s2[w++];
+        else {
+            str[i] = s2[w];
+            w++;
+        }
     }
+    str[++i] = '\0';
     return str;
 }
