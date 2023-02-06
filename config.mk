@@ -1,7 +1,7 @@
 CC=		gcc
 CFLAGS= -g3 -Wall -Werror -Wextra
 BIN=	pomo
-SRC=	src/main.c\
-		src/flag.c
+SRC=	src/pomo.c\
+		src/util.c
 
 OBJ=	$(SRC:.c=.o)

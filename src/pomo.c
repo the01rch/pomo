@@ -1,6 +1,6 @@
-#include "pomo.h"
+#include "../icl/pomo.h"
 
-char data[5][8] = {0};
+char data[41] = {0};
 int check = 0;
 int pclient = 0;
 int cnt = 0;
@@ -12,6 +12,24 @@ void get_pid(int sig, siginfo_t *info, void *context)
     pclient = info->si_pid;
     if (info->si_signo == SIGUSR1)
         check = 1;
+}
+
+char *bin2str(char *bin) {
+    int len = strlen(bin);
+    char *result = malloc(sizeof(char) * (len/8 + 1));
+    char byte[9];
+    int j = 0;
+
+    byte[8] = '\0';
+    for (int i = 0; i < len; i += 8) {
+        strncpy(byte, &bin[i], 8);
+        int char_value = 0;
+        for (int k = 0; k < 8; k++)
+            char_value = char_value * 2 + (byte[k] - '0');
+        result[j++] = (char)char_value;
+    }
+    result[j] = '\0';
+    return result;
 }
 
 char *time2str(int min, int sec) {
@@ -31,7 +49,7 @@ char **str2seq(char *str) {
     int y = 0;
     int x = 0;
 
-    seq = malloc(sizeof(char) * 5);
+    seq = malloc(sizeof(char *) * 5);
     while (*str) {
         seq[y] = malloc(sizeof(char) * 9);
         for (int i = 7; i >= 0; --i) {
@@ -47,20 +65,18 @@ char **str2seq(char *str) {
 }
 
 void send_seq(char **seq) {
-    if (seq[0][0] == '1' || seq[0][0] == '0')
-        printf("hehehehe\n");
-    /*
     for (int y = 0; y < 5; y++) {
         for (int x = 0; x < 8; x++) {
-            if (seq[y][x] == '1')
-                printf("askip");
+            if (seq[y][x] == '1') {
                 kill(pclient, SIGUSR1);
-            if (seq[y][x] == '0')
+                usleep(100);
+            } else if (seq[y][x] == '0') {
                 kill(pclient, SIGUSR2);
+                usleep(100);
+            }
             usleep(100);
         }
     } 
-    */
 }
 
 void act_start(void) {
@@ -87,24 +103,15 @@ void act_start(void) {
     }    
 }
 
-void handler_clock(int sig) {
-    int y = 0;
-    int x = 0;
-
-    if (sig == SIGUSR1) {
-        if (x == 8) {
-            y++;
-            x = 0;
-        }
-        data[y][x++] = '1';
-        cnt++;
-    } else if (sig == SIGUSR2) {
-        if (x == 8) {
-            y++;
-            x = 0;
-        }
-        data[y][x++] = '0';
-        cnt++;
+void handler_clock(int signum, siginfo_t *siginfo, void *unused) {
+    (void)unused;
+    (void)siginfo;
+    if (signum == SIGUSR1) {
+        data[cnt++] = '1';
+        putchar(data[cnt]);
+    } else if (signum == SIGUSR2) {
+        data[cnt++] = '0';
+        putchar(data[cnt]);
     }
 }
 
@@ -124,18 +131,18 @@ void act_clock(void) {
     pclose(output);
     kill(atoi(buf), 10);
     pclient = getpid();
-    act.sa_flags = SA_RESTART;
-    act.sa_handler = &handler_clock;
+    act.sa_flags = SA_RESTART|SA_SIGINFO;
+    act.sa_sigaction = handler_clock;
     sigaction(SIGUSR1, &act, NULL);
     sigaction(SIGUSR2, &act, NULL);
     while (1) {
         if (cnt == 40) {
-            printf("final kill !\n");
+            data[40] = '\0';
             break;
         }
     }
-    for (int y = 0; y < 5; y++)
-        puts(data[y]);
+    char *str = bin2str(data);
+    printf("%s\n", str);
     return;
 }
 

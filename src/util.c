@@ -1,4 +1,14 @@
-#include "pomo.h"
+#include "../icl/pomo.h"
+
+int my_strlen(char *str) {
+    int len = 0;
+
+    while (*str) {
+        str++;
+        len++;
+    }
+    return len;
+}
 
 bool my_strcmp(char *s1, char *s2) {
     for (int i = 0; s1[i] != '\0'; i++) {
@@ -18,7 +28,7 @@ void my_swap(char *c1, char *c2) {
 }
 
 void my_strrev(char *str) {
-    int size = strlen(str);
+    int size = my_strlen(str);
     int half = size / 2;
     int y = size - 1;
     
@@ -55,13 +65,13 @@ int my_itoa(int n, char *str, int base) {
 }
 
 char *my_strconc(char *s1, char *s2) {
-    int tsize = strlen(s1) + strlen(s2);
+    int tsize = my_strlen(s1) + my_strlen(s2);
     char *str = malloc(sizeof(char) * tsize + 1);
     int w = 0;
     int i = 0;
 
     for ( ; i < tsize; i++) {
-        if (i < strlen(s1))
+        if (i < my_strlen(s1))
             str[i] = s1[i];
         else {
             str[i] = s2[w];
@@ -71,3 +81,12 @@ char *my_strconc(char *s1, char *s2) {
     str[++i] = '\0';
     return str;
 }
+
+/*
+int my_atoi(char *str, int base) {
+    int nb;
+
+    
+    return nb; 
+}
+*/
