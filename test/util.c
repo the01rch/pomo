@@ -35,6 +35,7 @@ int my_itoa(int n, char *str, int base) {
 
     if (n == 0) {
         str[0] = '0';
+        str[1] = '\0';
         return 0;
     }
     if (n < 0) {
@@ -47,7 +48,8 @@ int my_itoa(int n, char *str, int base) {
         n = n / base;
     }
     if (neg == true)
-       str[i] = '-'; 
+       str[i++] = '-'; 
+    str[i] = '\0';
     my_strrev(str);
     return 0; 
 }
