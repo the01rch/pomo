@@ -17,6 +17,9 @@ Pomo is a simple productivity tool written in C that helps unix users manage
 their time using the [Pomodoro Technique](https://en.wikipedia.org/wiki/Pomodoro_Technique) 
 directly on the terminal.
 
+Pomo is still in its initial phase, any feedback and contributions from users
+are welcomes and values.
+
 # Setup
 
 > You need to have gcc and make installed.
