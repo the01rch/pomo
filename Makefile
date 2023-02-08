@@ -16,4 +16,10 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+install: all
+	@sudo cp $(BIN) /bin/
+
+uninstall: fclean
+	@sudo rm /bin/$(BIN)	
+
+.PHONY: all clean fclean re install uninstall
