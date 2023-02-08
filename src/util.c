@@ -81,12 +81,3 @@ char *my_strconc(char *s1, char *s2) {
     str[++i] = '\0';
     return str;
 }
-
-/*
-int my_atoi(char *str, int base) {
-    int nb;
-
-    
-    return nb; 
-}
-*/

@@ -5,7 +5,7 @@ int check = 0;
 int pclient = 0;
 int cnt = 0;
 
-void get_pid(int sig, siginfo_t *info, void *context)
+void get_client_pid(int sig, siginfo_t *info, void *context)
 {
     (void)context;
     (void)sig;
@@ -79,13 +79,13 @@ void send_seq(char **seq) {
     } 
 }
 
-void act_start(void) {
+static void act_start(void) {
     struct sigaction act;
     int min = 24;
     int sec = 59;
 
     act.sa_flags = SA_SIGINFO|SA_RESTART;
-    act.sa_sigaction = get_pid;
+    act.sa_sigaction = get_client_pid;
     sigaction(SIGUSR1, &act, NULL);
     while (1) {
         if (min == 0 && sec == 0)
@@ -103,22 +103,19 @@ void act_start(void) {
     }    
 }
 
-void handler_clock(int signum, siginfo_t *siginfo, void *unused) {
+static void handler_clock(int signum, siginfo_t *siginfo, void *unused) {
     (void)unused;
     (void)siginfo;
     if (signum == SIGUSR1) {
         data[cnt++] = '1';
-        putchar(data[cnt]);
     } else if (signum == SIGUSR2) {
         data[cnt++] = '0';
-        putchar(data[cnt]);
     }
 }
 
-void act_clock(void) {
+char *get_server_pid(void) {
     FILE *output;
-    char buf[SIZE];
-    struct sigaction act;
+    char *buf = malloc(sizeof(char) * SIZE);
 
     output = popen("pgrep -f 'pomo start'", "r");
     if (output == NULL) {
@@ -129,7 +126,16 @@ void act_clock(void) {
             count++;
     }
     pclose(output);
+    return (buf);
+}
+
+static void act_clock(void) {
+    struct sigaction act;
+    char *buf = get_server_pid();
+    char *res = NULL;
+
     kill(atoi(buf), 10);
+    free(buf);
     pclient = getpid();
     act.sa_flags = SA_RESTART|SA_SIGINFO;
     act.sa_sigaction = handler_clock;
@@ -141,21 +147,32 @@ void act_clock(void) {
             break;
         }
     }
-    char *str = bin2str(data);
-    printf("%s\n", str);
+    res = bin2str(data);
+    printf("%s\n", res);
+    free(res);
     return;
 }
 
-void flag(char *act) {
-    if (my_strcmp("start", act))
-        act_start();
-    else if (my_strcmp("clock", act))
-        act_clock();
-}
-
 int main(int ac, char **av) {
+    char *buf = NULL;
+
     if (ac != 2)
         return 1;
-    flag(av[1]);
+    if (my_strcmp("start", av[1])) {
+        act_start();
+    } else if (my_strcmp("clock", av[1])) {
+        act_clock();
+    } else if (my_strcmp("pause", av[1])) {
+        buf = get_server_pid();    
+        kill(atoi(buf), SIGSTOP);
+    } else if (my_strcmp("resume", av[1])) {
+        buf = get_server_pid();    
+        kill(atoi(buf), SIGCONT);
+    } else if (my_strcmp("stop", av[1])) {
+        buf = get_server_pid();    
+        kill(atoi(buf), SIGKILL);
+    } else
+        return 1;
+    free(buf);
     return 0;
 }
