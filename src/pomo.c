@@ -159,16 +159,19 @@ int main(int ac, char **av) {
     if (ac != 2)
         return 1;
     if (my_strcmp("start", av[1])) {
+		system("notify-send -i '/home/rr/Programs/pomo/pomo.png' Pomo Start");
         act_start();
     } else if (my_strcmp("clock", av[1])) {
         act_clock();
     } else if (my_strcmp("pause", av[1])) {
+		system("notify-send -i '/home/rr/Programs/pomo/pomo.png' Pomo Paused");
         buf = get_server_pid();    
         kill(atoi(buf), SIGSTOP);
     } else if (my_strcmp("resume", av[1])) {
         buf = get_server_pid();    
         kill(atoi(buf), SIGCONT);
     } else if (my_strcmp("stop", av[1])) {
+		system("notify-send -i '/home/rr/Programs/pomo/pomo.png' Pomo Stoped");
         buf = get_server_pid();    
         kill(atoi(buf), SIGKILL);
     } else
