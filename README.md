@@ -26,7 +26,7 @@ are welcomes and values.
 
 1. Clone this repo :
 ```bash
-git clone github.com/the01rch/pomo
+git clone https://github.com/the01rch/pomo
 ```
 2. Go to the directory :
 ```bash
