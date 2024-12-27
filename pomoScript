@@ -1,0 +1,13 @@
+#!/bin/sh
+
+choices="start\nclock\npause\nresume\nstop"
+chosen=$(echo -e "$choices" | dmenu -p "Options:")
+picture_path="res/pomo.png"
+
+case "$chosen" in
+	start) notify-send -i $picture_path Pomo Start ; pomo start &;;
+	clock) notify-send -i $picture_path Pomo $(pomo clock);;
+	pause) notify-send -i $picture_path Pomo Pause ; pomo pause;;
+	resume) notify-send -i $picture_path Pomo Resume ; pomo resume;;
+	stop) notify-send -i $picture_path Pomo Stop ; kill -9 $(pgrep -f 'pomo start');;
+esac

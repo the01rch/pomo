@@ -17,9 +17,9 @@ fclean: clean
 re: fclean all
 
 install: all
-	@sudo cp $(BIN) /bin/
+	@sudo cp $(BIN) /usr/local/bin
 
 uninstall: fclean
-	@sudo rm /bin/$(BIN)	
+	@sudo rm /usr/local/bin/$(BIN)	
 
 .PHONY: all clean fclean re install uninstall

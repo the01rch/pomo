@@ -79,11 +79,30 @@ void send_seq(char **seq) {
     } 
 }
 
+char *get_output_cmd(const char *cmd) {
+    FILE *output;
+    char *buf = malloc(sizeof(char) * SIZE);
+
+    output = popen(cmd, "r");
+    if (output == NULL) {
+        printf("error!");
+    } else {
+        int count = 1;
+        while (fgets(buf, SIZE-1, output) != NULL)
+            count++;
+    }
+    pclose(output);
+    return (buf);
+}
+
 static void act_start(void) {
     struct sigaction act;
     int min = 24;
     int sec = 59;
+	char *cmd = get_output_cmd("pgrep -f 'pomo start' | wc -l");
 
+	if (atoi(cmd) > 2)
+		return (printf("Error :Pomo instance already running\n"), (void)0);
     act.sa_flags = SA_SIGINFO|SA_RESTART;
     act.sa_sigaction = get_client_pid;
     sigaction(SIGUSR1, &act, NULL);
@@ -113,27 +132,13 @@ static void handler_clock(int signum, siginfo_t *siginfo, void *unused) {
     }
 }
 
-char *get_server_pid(void) {
-    FILE *output;
-    char *buf = malloc(sizeof(char) * SIZE);
-
-    output = popen("pgrep -f 'pomo start'", "r");
-    if (output == NULL) {
-        printf("error!");
-    } else {
-        int count = 1;
-        while (fgets(buf, SIZE-1, output) != NULL)
-            count++;
-    }
-    pclose(output);
-    return (buf);
-}
-
 static void act_clock(void) {
     struct sigaction act;
-    char *buf = get_server_pid();
+    char *buf = get_output_cmd("pgrep -f 'pomo start'");
     char *res = NULL;
 
+	if (strlen(buf) == 0)
+		return (printf("Error: pomo is not starting\n"), (void)0);
     kill(atoi(buf), 10);
     free(buf);
     pclient = getpid();
@@ -154,26 +159,20 @@ static void act_clock(void) {
 }
 
 int main(int ac, char **av) {
-    char *buf = NULL;
+	char *buf = buf = strdup(get_output_cmd("pgrep -f 'pomo start'"));
 
     if (ac != 2)
         return 1;
     if (my_strcmp("start", av[1])) {
-		system("notify-send -i '/home/rr/Programs/pomo/pomo.png' Pomo Start");
         act_start();
     } else if (my_strcmp("clock", av[1])) {
         act_clock();
     } else if (my_strcmp("pause", av[1])) {
-		system("notify-send -i '/home/rr/Programs/pomo/pomo.png' Pomo Paused");
-        buf = get_server_pid();    
         kill(atoi(buf), SIGSTOP);
     } else if (my_strcmp("resume", av[1])) {
-        buf = get_server_pid();    
         kill(atoi(buf), SIGCONT);
     } else if (my_strcmp("stop", av[1])) {
-		system("notify-send -i '/home/rr/Programs/pomo/pomo.png' Pomo Stoped");
-        buf = get_server_pid();    
-        kill(atoi(buf), SIGKILL);
+		system("kill -9 $(pgrep -f 'pomo start')");
     } else
         return 1;
     free(buf);
